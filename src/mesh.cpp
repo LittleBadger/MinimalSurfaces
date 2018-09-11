@@ -17,7 +17,7 @@ double eps2 = .1;
 // ------------------------- Embedding Functionality ---------------//
 void mesh::MapDomainPolar(std::function<vec3(double,double)> c) {
 
-	for (int i = 0; i < V.size(); i++) {
+	for (int i = 0; i < V.size(); ++i) {
 
 		double r = glm::length(V[i]);
 		double t = glm::atan(V[i].x,V[i].z);
@@ -27,7 +27,7 @@ void mesh::MapDomainPolar(std::function<vec3(double,double)> c) {
 }
 
 void mesh::MapDomain(std::function<vec3(double,double)> c) {
-	for (int i = 0; i < V.size(); i++) {
+	for (int i = 0; i < V.size(); ++i) {
 		V[i] = c(V[i].x,V[i].z);
 	}
 }
@@ -36,31 +36,30 @@ void mesh::MapBoundaryComponent(std::function<vec3(double)> curve, int c) {
 
 	int i = 0;
 	while ( i < V.size() && bc[i] != c) {
-		i++;
+		++i;
 	}
 	int s = i;
 	while ( i < V.size() && bc[i] == c)
-		i++;
+		++i;
 
 	int e = i;
 	int M = e-s;
 
-	for (i = s; i < e; i++) {
+	for (i = s; i < e; ++i) {
 		double t = 1.0*(s-i) / M;
 		V[i] = curve(t);
 	}
 }
 
 // ------------------------- Pinkall-Polthier Jump algorithms ------------------//
-
 void mesh::PP() {
 	int nv = SizeOfInterior;
 
 	MatrixXd lap(nv,nv);
 	VectorXd ppx(nv); VectorXd ppy(nv); VectorXd ppz(nv);
 
-	for (int i = 0; i < nv; i++) {
-		for (int j = 0; j < nv; j++) {
+	for (int i = 0; i < nv; ++i) {
+		for (int j = 0; j < nv; ++j) {
 			lap(i,j) = 0;
 		}
 		ppx(i) = 0; ppy(i) = 0; ppz(i) = 0;
@@ -68,7 +67,7 @@ void mesh::PP() {
 
 	ComputeEdgeLengths();
 
-	for (int i = 0; i < E.size()/2; i++) {
+	for (int i = 0; i < E.size()/2; ++i) {
 		int v1 = E[2*i]; int v2 = E[2*i+1];
 
 		double w = CotanWeight(i);
@@ -86,7 +85,7 @@ void mesh::PP() {
 
 	VectorXd hx = lap.llt().solve(ppx); VectorXd hy = lap.llt().solve(ppy); VectorXd hz = lap.llt().solve(ppz);
 
-	for (int i = 0; i < nv; i++) {
+	for (int i = 0; i < nv; ++i) {
 		V[i].x = hx[i]; V[i].y = hy[i]; V[i].z = hz[i];
 	}
 }
@@ -99,8 +98,8 @@ void mesh::PPFlip() {
 
 	VectorXd ppx(nv); VectorXd ppy(nv); VectorXd ppz(nv);
 
-	for (int i = 0; i < nv; i++) {
-		for (int j = 0; j < nv; j++) {
+	for (int i = 0; i < nv; ++i) {
+		for (int j = 0; j < nv; ++j) {
 			lap(i,j) = 0;
 		}
 		ppx(i) = 0; ppy(i) = 0; ppz(i) = 0;
@@ -108,7 +107,7 @@ void mesh::PPFlip() {
 
 	IntrinsicDelEdgeFlipAlg();
 
-	for (int i = 0; i < E.size()/2; i++) {
+	for (int i = 0; i < E.size()/2; ++i) {
 		int v1 = E[2*i];
 		int v2 = E[2*i+1];
 
@@ -127,7 +126,7 @@ void mesh::PPFlip() {
 
 	VectorXd hx = lap.llt().solve(ppx);	VectorXd hy = lap.llt().solve(ppy); VectorXd hz = lap.llt().solve(ppz);
 
-	for (int i = 0; i < nv; i++) {
+	for (int i = 0; i < nv; ++i) {
 		V[i].x = hx[i]; V[i].y = hy[i]; V[i].z = hz[i];
 	}
 }
@@ -139,21 +138,21 @@ void mesh::ElasticFlow(float dt) {
 	//ExtrinsicDelEdgeFlipAlg();
 	//ComputeEdgeLengths();
 
-	for (int i = 0; i < N.size(); i++)
+	for (int i = 0; i < N.size(); ++i)
 		N[i] = vec3(0,0,0);
 
 
-	for (int i = 0; i < E.size()/2; i++) {
+	for (int i = 0; i < E.size()/2; ++i) {
 		vec3 p = V[E[2*i]]-V[E[2*i+1]];
 		N[E[2*i]] -= p;
 		N[E[2*i+1]] += p;
 	}
 
-	for (int i = 0; i < SizeOfInterior; i++) {
+	for (int i = 0; i < SizeOfInterior; ++i) {
 		V[i] += (N[i])*dt;
 	}
 
-	for (int i = SizeOfInterior; i < V.size(); i++)
+	for (int i = SizeOfInterior; i < V.size(); ++i)
 		N[i] = vec3(0,0,0);
 }
 
@@ -163,12 +162,12 @@ void mesh::MeanCurvatureFlow(float dt) {
 	ExtrinsicDelEdgeFlipAlg();
 	ComputeEdgeLengths();
 	
-	for (int i = 0; i < N.size(); i++) {
+	for (int i = 0; i < N.size(); ++i) {
 		N[i] = vec3(0,0,0);
 		VA[i] = 0;
 	}
 
-	for (int i = 0; i < E.size()/2; i++) {
+	for (int i = 0; i < E.size()/2; ++i) {
 		float w = CotanWeight(i);
 		N[E[2*i]] += (V[E[2*i+1]]  - V[E[2*i]])*w;
 		N[E[2*i+1]] -= (V[E[2*i+1]]  - V[E[2*i]])*w;
@@ -179,7 +178,7 @@ void mesh::MeanCurvatureFlow(float dt) {
 		VA[E[2*i]] += EA;
 	}
 
-	for (int i = 0; i < SizeOfInterior; i++) {
+	for (int i = 0; i < SizeOfInterior; ++i) {
 		V[i] += (N[i])*dt/VA[i];
 	}
 }
@@ -199,7 +198,7 @@ float mesh::SurfaceArea() {
 
 	float A = 0;
 
-	for (int i = 0; i < F.size()/3; i++) {
+	for (int i = 0; i < F.size()/3; ++i) {
 		A += Area(i);
 	}
 
@@ -207,7 +206,7 @@ float mesh::SurfaceArea() {
 }
 
 void mesh::PrintTriangleQNumber() {
-	for (int i = 0; i < F.size()/3; i++) {
+	for (int i = 0; i < F.size()/3; ++i) {
 
 		float l1 = L[FE[3*i]];
 		float l2 = L[FE[3*i+1]];
@@ -225,7 +224,7 @@ void mesh::PrintTriangleQNumber() {
 
 void mesh::PrintEdgeLengths() {
 	ComputeEdgeLengths();
-	for (int i = 0; i < E.size()/2; i++) {
+	for (int i = 0; i < E.size()/2; ++i) {
 		std::cout<<L[i]<<",";
 	}
 
@@ -240,7 +239,7 @@ float mesh::CotanWeight(int e) {
 	double w = 0;
 	int c = 0;
 	
-	for (int i = 0; i < 2; i++) {
+	for (int i = 0; i < 2; ++i) {
 		int f = EF[2*e + i];
 		if ( f != -1 ) {
 			c+= 1;
@@ -263,7 +262,7 @@ double mesh::TanHalfAngle(int e, int f) {
 }
 
 void mesh::ComputeEdgeLengths() {
-	for (int i = 0; i < E.size()/2; i++) {
+	for (int i = 0; i < E.size()/2; ++i) {
 		L[i] = length(V[E[2*i]] - V[E[2*i+1]]);
 	}
 }
@@ -276,7 +275,7 @@ void mesh::IntrinsicDelEdgeFlipAlg() {
 
 	while (!allDelaunay) {
 		allDelaunay = true;
-		for (int i = 0; i < E.size()/2; i++) {
+		for (int i = 0; i < E.size()/2; ++i) {
 			if ( EF[2*i] != -1 && EF[2*i+1] != - 1) // not a boundary face
 			{
 				if ( CotanWeight(i) < -eps ) // not delaunay, problem
@@ -298,7 +297,7 @@ void mesh::ExtrinsicDelEdgeFlipAlg() {
 
 		allDelaunay = true;
 
-		for (int i = 0; i < E.size()/2; i++) {
+		for (int i = 0; i < E.size()/2; ++i) {
 			if ( EF[2*i] != -1 && EF[2*i+1] != - 1) // not a boundary face
 			{
 				if ( CotanWeight(i) < -eps ) // not delaunay, problem
@@ -352,7 +351,7 @@ void mesh::InitRandDiskTriangulation(int M, int N, std::vector<double> radii, st
 
 		accept = length(v-centers[0]) < radii[0]-eps2;
 
-		for (int i = 1; i < radii.size(); i++)
+		for (int i = 1; i < radii.size(); ++i)
 			accept = accept & (length(v-centers[i]) > radii[i]+eps2);
 		if ( accept ) {
 			k++;
@@ -361,7 +360,7 @@ void mesh::InitRandDiskTriangulation(int M, int N, std::vector<double> radii, st
 	}
 
 	for (int q = 0; q < centers.size(); q++) {
-		for (int i = 0; i < M; i++) {
+		for (int i = 0; i < M; ++i) {
 			float th = 1.0*i/M*2.0*3.14591;
 			double r = radii[q];
 			vec2 c = centers[q];
@@ -376,9 +375,9 @@ void mesh::InitRandDiskTriangulation(int M, int N, std::vector<double> radii, st
 void mesh::PlanarDelaunaryTriangulate() {
 	bool delaunay;
 
-	for (int i = 0; i < V.size(); i++) {
-		for (int j = i+1; j < V.size(); j++) {
-			for (int k = j+1; k < V.size(); k++) {
+	for (int i = 0; i < V.size(); ++i) {
+		for (int j = i+1; j < V.size(); ++j) {
+			for (int k = j+1; k < V.size(); ++k) {
 
 
 				delaunay = true;
@@ -436,20 +435,20 @@ void mesh::InitRegularRectTriangulation(int L, int W) {
 	
 	SizeOfInterior = (L-2)*(W-2);
 	// add (L-2) x (W-2) vertices, labeling those on the boundary as boundary vertices.
-	for (int i = 1; i < L-1; i++) {
-		for (int j = 1; j < W-1; j++) {
+	for (int i = 1; i < L-1; ++i) {
+		for (int j = 1; j < W-1; ++j) {
 			Vertex(2.0*i/(L-1) - 1, 0, 2.0*j/(W-1) - 1, 0);
 			m[i*W+j] = k++;
 		}
 	}
 	
 	// add the boundary vertices in clockwise order
-	for (int i = 0; i < L-1; i++) {
+	for (int i = 0; i < L-1; ++i) {
 		int j = 0;
 			Vertex(2.0*i/(L-1) - 1, 0, 2.0*j/(W-1) - 1, 0);
 		m[i*W+j] = k++;
 	}
-	for (int j = 0; j < W-1; j++) {
+	for (int j = 0; j < W-1; ++j) {
 		int i = L-1;
 			Vertex(2.0*i/(L-1) - 1, 0, 2.0*j/(W-1) - 1, 0);
 		m[i*W+j] = k++;
@@ -466,16 +465,16 @@ void mesh::InitRegularRectTriangulation(int L, int W) {
 	}
 	
 	// add the faces.
-	for (int i = 0; i < L-1; i++) {
-		for (int j = 0; j < W-1; j++) {
+	for (int i = 0; i < L-1; ++i) {
+		for (int j = 0; j < W-1; ++j) {
 			Face(m[i*W+j], m[i*W+j+1], m[i*W+j+W]);
 			Face(m[i*W+j+W], m[i*W+j+1], m[i*W+j+W+1]);
 		}
 	}
 }
-// returns the edge adjacent to face f and vertices v1 and v2
+
 int mesh::EdgeFace(int v1, int v2, int f) {
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < 3; ++i) {
 		int k = FE[3*f + i];
 		if ((E[2*k] == v1 && E[2*k+1] == v2) || (E[2*k] == v2 && E[2*k+1] == v1) ) return k; }
 
@@ -494,10 +493,10 @@ int mesh::TheOtherVertex(int e, int f) {
 	return 0;
 }
 
-// if e = [v1,v2] and belongs to triangle [v1,v2,v3], returns edges [v1,v3], [v2,v3] (in order)
+
 std::pair<int,int> mesh::TheOtherEdges(int e, int f) {
 
-std::pair<int,int> oe;
+	std::pair<int,int> oe;
 
 	int e1 = FE[3*f]; int e2 = FE[3*f+1]; int e3 = FE[3*f+2];
 
@@ -527,7 +526,6 @@ int mesh::FindEdge(int v1, int v2) {
 
 void mesh::EdgeFlip(int e) {
 
-	//std::cout<<"flipped an edge"<<std::endl;
 	int f1 = EF[2*e];
 	int f2 = EF[2*e+1];
 
@@ -544,12 +542,6 @@ void mesh::EdgeFlip(int e) {
 	AC = EdgeFace(A,C,f1);
 	BD = EdgeFace(B,D,f2);
 
-	/*
-	for (int i = 0; i < 3; i++) { int k = FE[3*f1 + i]; if ((E[2*k] == D && E[2*k+1] == A) || (E[2*k] == A && E[2*k+1] == D) ) AD = k; }
-	for (int i = 0; i < 3; i++) { int k = FE[3*f2 + i]; if ((E[2*k] == C && E[2*k+1] == B) || (E[2*k] == B && E[2*k+1] == C) ) BC = k; }
-	for (int i = 0; i < 3; i++) { int k = FE[3*f1 + i]; if ((E[2*k] == C && E[2*k+1] == A) || (E[2*k] == A && E[2*k+1] == C) ) AC = k; }
-	for (int i = 0; i < 3; i++) { int k = FE[3*f2 + i]; if ((E[2*k] == D && E[2*k+1] == B) || (E[2*k] == B && E[2*k+1] == D) ) BD = k; }
-	 */
 	//gamma is the angle BD
 	double thg = TanHalfAngle(BD,f2);
 	//delta is the angle AD
@@ -574,15 +566,12 @@ void mesh::EdgeFlip(int e) {
 	F[3*f2 + 0] = A; F[3*f2 + 1] = B; F[3*f2 + 2] = D;
 }
 
-void mesh::Vertex(float x, float y, float z) {
+
+void mesh::Vertex(float x, float y, float z, int bcv) {
 	V.push_back(vec3(x,y,z));
 	N.push_back(vec3(0,0,0));
 	bc.push_back(-1);
 	VA.push_back(0);
-}
-
-void mesh::Vertex(float x, float y, float z, int bcv) {
-	Vertex(x,y,z);
 	bc[bc.size()-1] = bcv;
 }
 
@@ -604,7 +593,7 @@ int mesh::FindOrInsertEdge(int v1, int v2) {
 }
 
 void mesh::translateMesh(vec3 t) {
-	for (int i = 0; i < V.size(); i++)
+	for (int i = 0; i < V.size(); ++i)
 		V[i] += t;
 }
 
@@ -613,7 +602,7 @@ void mesh::ComputeBCV() {
 	cv[0][0] = 0; cv[0][1] = 0; cv[1][0] = 0; cv[1][1] = 0;
 	sh = glm::vec3(0,V[0].y,0);
 
-	for (int i = 0; i < V.size(); i++) {
+	for (int i = 0; i < V.size(); ++i) {
 		cv[0][0] += V[i].x*V[i].x;
 		cv[1][0] += V[i].x*V[i].z;
 		cv[0][1] += V[i].x*V[i].z;

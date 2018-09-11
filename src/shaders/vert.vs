@@ -3,6 +3,7 @@
 uniform mat4 viewTransform;
 uniform mat4 modelTransform;
 
+
 layout (location = 0) in vec4 vPosition;
 layout (location = 1) in vec4 vNormal;
 

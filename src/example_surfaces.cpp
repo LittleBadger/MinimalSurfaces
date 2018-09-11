@@ -1,7 +1,5 @@
 #include "example_surfaces.h"
-#include <iostream>
 #include <vector>
-#include <fstream>
 #include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -9,20 +7,24 @@
 #include <glm/gtx/string_cast.hpp>
 #include <functional>
 
+double PI = 3.14159;
 
 void graph(mesh &m1) {
-	m1.InitRandDiskTriangulation(20,30,423452);
+	
+	m1.InitRandDiskTriangulation(20,80,423452);
 
+	/*
 	std::function<vec3(double, double)> randFunc = [](double x, double y) {
 		return vec3(x, 1.0*rand()/(1.0*RAND_MAX) , y);
 	};
 
 	m1.MapDomain(randFunc);
+	*/
 
 	std::function<vec3(double)> embedding = [](double t) {
 
-		float th = 2 * pi * t;
-		return vec3(cos(th), .9*cos(2*th) , -sin(th));
+		float th = 2 * PI * t;
+		return vec3(cos(th), .5*cos(2*th) , -sin(th));
 	};
 
 	m1.MapBoundaryComponent(embedding,0);
@@ -31,32 +33,42 @@ void graph(mesh &m1) {
 void enneper(mesh &m1) {
 	m1.InitRandDiskTriangulation(100,200, 1234132);
 
-		std::function<vec3(double)> embedding = [](double t) {
-			double r = 1.9;
-			float th = 2 * pi * t;
-			return vec3( cos(th) - 1/3.0f*r*r*cos(3*th), -sin(th)-1/3.0f*r*r*sin(3*th), r*cos(2*th));
-		};
+	std::function<vec3(double)> embedding = [](double t) {
+		double r = 1.9;
+		float th = 2 * PI * t;
+		return vec3( cos(th) - 1/3.0f*r*r*cos(3*th), -sin(th)-1/3.0f*r*r*sin(3*th), r*cos(2*th));
+	};
 
-		m1.MapBoundaryComponent(embedding,0);
+	m1.MapBoundaryComponent(embedding,0);
 }
 
+// make an annulus by cutting a disk of radius .5 out of a disk
+// of radius 1. Then make vertical the smaller boundary.
 void annulusHV(mesh &m1) {
+	
+	
 	std::vector<double> radii; std::vector<vec2> centers;
 	radii.push_back(1); centers.push_back(vec2(0,0));
 	radii.push_back(.5); centers.push_back(vec2(0,0));
 	m1.InitRandDiskTriangulation(20,60,radii,centers, 1234234);
+	
+
 	std::function<vec3(double)> embedding = [](double t) {
-		return vec3( 0, .8*cos(2*pi*t), -.7*sin(2*pi*t));
+		return vec3( 0, .8*cos(2*PI*t), -.7*sin(2*PI*t));
 	};
 
 	m1.MapBoundaryComponent(embedding,1);
 
 }
 
+
+// inverse stereographically project a disk with five holes
+// to produce a sphere with 6 disks removed.
 void psurface(mesh &m1) {
 	std::vector<double> radii;
 	std::vector<vec2> centers;
 
+	
 	double r0 = 4.79129; double r1 = 0.436436; double r2 = 0.208712;
 	double c = 1.09109;
 	radii.push_back(r0); centers.push_back(vec2(0,0));
@@ -78,16 +90,18 @@ void psurface(mesh &m1) {
 	m1.MapDomain(stereographic);
 }
 
+// This produces an extruded absolute value shape, by first mapping a randomly triangulated
+// disk to a planar square, and then mapping to the final shape.
 void house(mesh &m1) {
 
 	std::function<vec3(double,double)> embedding = [](double r, double t) {
-		if ( t > -pi/4.0 && t < pi/4.0 )
+		if ( t > -PI/4.0 && t < PI/4.0 )
 			return vec3(r ,.0, r*tan(t));
-		if ( t > pi/4.0 && t < 3*pi/4.0 )
+		if ( t > PI/4.0 && t < 3*PI/4.0 )
 			return vec3(r/tan(t), 0, r);
-		if ( t > 3*pi/4.0 || t < -3*pi/4.0 )
+		if ( t > 3*PI/4.0 || t < -3*PI/4.0 )
 			return vec3(-r,0, -r*tan(t));
-		if ( t > -3*pi/4.0 || t < -pi/4.0 )
+		if ( t > -3*PI/4.0 || t < -PI/4.0 )
 			return vec3(-r/tan(t),0, -r);
 	};
 
@@ -100,16 +114,17 @@ void house(mesh &m1) {
 	m1.MapDomain(embedding2);
 }
 
+// An extruded staple shape. 
 void box(mesh &m1) {
 
 	std::function<vec3(double,double)> embedding = [](double r, double t) {
-		if ( t > -pi/4.0 && t < pi/4.0 )
+		if ( t > -PI/4.0 && t < PI/4.0 )
 			return vec3(r ,.0, r*tan(t));
-		if ( t > pi/4.0 && t < 3*pi/4.0 )
+		if ( t > PI/4.0 && t < 3*PI/4.0 )
 			return vec3(r/tan(t), 0, r);
-		if ( t > 3*pi/4.0 || t < -3*pi/4.0 )
+		if ( t > 3*PI/4.0 || t < -3*PI/4.0 )
 			return vec3(-r,0, -r*tan(t));
-		if ( t > -3*pi/4.0 || t < -pi/4.0 )
+		if ( t > -3*PI/4.0 || t < -PI/4.0 )
 			return vec3(-r/tan(t),0, -r);
 	};
 
@@ -127,15 +142,21 @@ void box(mesh &m1) {
 	m1.MapDomain(embedding2);
 }
 
-void drop(mesh &m1) {
-	std::function<vec3(double,double)> embedding = [](double r, double t) {
-		return vec3(2*(r-.75), .6*cos(t), .6*sin(t));
-			};
-	std::vector<double> radii; std::vector<vec2> centers;
-	radii.push_back(1); centers.push_back(vec2(0,0));
-	radii.push_back(.5); centers.push_back(vec2(0,0));
-	m1.InitRandDiskTriangulation(10,10,radii,centers,32434354);
-	m1.MapDomainPolar(embedding);
+
+// Uses a regular triangulation of a square. 
+void RegularBox(mesh &m1) {
+	m1.InitRegularRectTriangulation(10, 10);
+	
+	std::function<vec3(double,double)> embedding2 = [](double x, double y) {
+		if ( y > .201)
+			return vec3(.4*x,1-y,.4);
+		if ( y > -.201)
+			return vec3(.4*x,.6,y);
+
+		return vec3(.4*x,1+y,-.4);
+	};
+
+	m1.MapDomain(embedding2);
 }
 
 void pinch(mesh &m1) {
@@ -146,6 +167,7 @@ void pinch(mesh &m1) {
 	m1.MapDomainPolar(embedding);
 }
 
+// Creates a cylinder by making a planar annulus, and then  mapping to 3D.
 void cylinder(mesh &m1) {
 	std::function<vec3(double,double)> embedding = [](double r, double t) {
 		return vec3(1.3*(r-.75), .6*cos(t), .6*sin(t));
@@ -167,17 +189,4 @@ void doublyWindedCurve(mesh &m1) {
 }
 
 
-void RegularBox(mesh &m1) {
-	m1.InitRegularRectTriangulation(10, 10);
-	
-	std::function<vec3(double,double)> embedding2 = [](double x, double y) {
-		if ( y > .201)
-			return vec3(.4*x,1-y,.4);
-		if ( y > -.201)
-			return vec3(.4*x,.6,y);
 
-		return vec3(.4*x,1+y,-.4);
-	};
-
-	m1.MapDomain(embedding2);
-}

@@ -16,57 +16,34 @@
 #include <glm/gtx/string_cast.hpp>
 #include "mesh.h"
 
-#define pi 3.141592654f
+// Camera angles, and scale
+float a1 = 3.14/4.0, a2 = -3.14/2.0f +1.1;
+float sf = .5;
 
-using namespace Eigen;
-using namespace glm;
-using namespace std;
-float dt = .01;
-
-float a1 = pi/4.0, a2 = -pi/2.0f +1.1;
-float view_rad = -.2, sf = 1;
-
+// GUI stuff
 int mx0, my0;
 bool left_mouse; 
 
-void display();
-
+// The surface
 mesh m1;
 
+// GPU objects and buffers
 GLuint VBO, NBO, VAO, EBOF, EBOE;
-GLuint shaderProgram;
-Shader *mainShader, *lineShader, *normalShader, *groundShader, *skyShader;
-
 GLuint GVAO, GVBO, GEBO;
 GLuint SVAO, SVBO, SEBO;
 
-void BufferMesh();
-
-float rot = 0;
-
-// two volumes on minimal surfaces (springer bonn), hildebrandt
-// house better triangulation
-// for the doubly winded disk, what is known in the smooth setting
-
-void SetupMesh() {
-
-	cylinder(m1);
-	BufferMesh();
-	return;
-}
+// Shaders
+GLuint shaderProgram;
+Shader *mainShader, *lineShader, *normalShader, *groundShader, *skyShader;
 
 void display()
 {
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	
-
-	glm::mat4 viewMat = glm::translate( glm::mat4(1.0), glm::vec3(0,0,view_rad))*glm::rotate( glm::rotate( glm::mat4(1.0), a2, glm::vec3(1,0,0)), a1, glm::vec3(0,1,0));
+	glm::mat4 viewMat = glm::translate( glm::mat4(1.0), glm::vec3(0,0,-.2))*glm::rotate( glm::rotate( glm::mat4(1.0), a2, glm::vec3(1,0,0)), a1, glm::vec3(0,1,0));
 	viewMat = glm::scale( viewMat,  glm::vec3(sf));
 	glm::mat4 inviewMat = glm::inverse(viewMat);
-	// draw triangles
-
 	
 	/* --------- draw the surface --------------------------------------------------- */
 	glDisable(GL_CULL_FACE);
@@ -78,21 +55,6 @@ void display()
 	glPolygonOffset( 1, 1 );
 	glDrawElements(GL_TRIANGLES, m1.F.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
-	/* ------------------------------------------------------------------------------- */
-
-	
-	/* -------- draw a sky. turn this off for a black sky, or edit skyshader.frag --- */
-	/*
-	skyShader->Use();
-	glUniformMatrix4fv(glGetUniformLocation(groundShader->Program, "viewTransform"), 1, false, &inviewMat[0][0]);
-
-	glBindVertexArray(SVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, SVBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, SEBO);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
-	*/
-	/* ------------------------------------------------------------------------------- */
 	
 	/* --------- draw the ground plane and shadows ---------------------------------- */
 	groundShader->Use();
@@ -109,8 +71,6 @@ void display()
 	glPolygonMode( GL_FRONT, GL_FILL );
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
-	/* ------------------------------------------------------------------------------- */
-
 
 	/* ------- draw triangle edges --------------------------------------------------- */
 	lineShader->Use();
@@ -118,28 +78,32 @@ void display()
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOE);
 	glDrawElements(GL_LINES, m1.E.size(), GL_UNSIGNED_INT, 0);
-	/* ------------------------------------------------------------------------------- */
-	
-	glBindVertexArray(0);;
+
+	glBindVertexArray(0);
 	glFlush();
 }
 
 void BufferMesh() {
 	glBindVertexArray(VAO);
 
+	/* ------------------ Buffer Vertex Data --------------------------------------- */
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, m1.V.size()*(sizeof(vec3)), &(m1.V[0].x), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (GLvoid*)0);
-
+	
+	/* ------------------- Buffer Normal Data ---------------------------------------- */
+	/*
 	glBindBuffer(GL_ARRAY_BUFFER, NBO);
 	glBufferData(GL_ARRAY_BUFFER, m1.N.size()*(sizeof(vec3)), &(m1.N[0].x), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (GLvoid*)0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (GLvoid*)0);*/
 
+	/* ------------------- Element buffer ojbects for the faces ---------------------- */
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOF);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m1.F.size()*sizeof(int), &(m1.F[0]), GL_STATIC_DRAW);
 
+	/* ------------------- Element buffer ojbects for the edges ---------------------- */
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOE);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m1.E.size()*sizeof(int), &(m1.E[0]), GL_STATIC_DRAW);
 }
@@ -177,14 +141,12 @@ void keyfun(unsigned char key, int x, int y) {
 
 void mousedragfun(int mx, int my) {
 	if ( left_mouse ) {
-		a2 -= .01*(my-my0);
-		a1 -= .01*(mx-mx0);
+		a2 -= .01*(my-my0); a1 -= .01*(mx-mx0);
 	} else {
 		sf *= 1-.001*(my-my0);
 	}
 
-	mx0 = mx;
-	my0 = my;
+	mx0 = mx; my0 = my;
 }
 
 void mousefun(int button, int state, int x, int y) {
@@ -200,6 +162,7 @@ int main(int argc, char** argv) {
 	glutCreateWindow(argv[0]);
 
 	glewExperimental = GL_TRUE;
+	
 	glewInit();
 
 	glEnable(GL_DEPTH_TEST);
@@ -212,20 +175,20 @@ int main(int argc, char** argv) {
 	glEnable(GL_LINE_SMOOTH);
 	glLineWidth(1.5);
 
-	mainShader = new Shader("vert.vs","frag.frag");
-	lineShader = new Shader("vert.vs","fragL.frag");
-	skyShader = new Shader("vertSky.vs","fragSky.frag");
-	groundShader = new Shader("vert.vs","fragGr.frag");
+	mainShader = new Shader("src/shaders/vert.vs","src/shaders/frag.frag");
+	lineShader = new Shader("src/shaders/vert.vs","src/shaders/fragL.frag");
+	skyShader = new Shader("src/shaders/vert.vs","src/shaders/fragSky.frag");
+	groundShader = new Shader("src/shaders/vert.vs","src/shaders/fragGr.frag");
 	//normalShader = new Shader("vert.vs","geom.geo","fragLB.frag");
 
-	/* ground */
+	/* ------------------- Ground ---------------------------------------------------- */
 	glGenVertexArrays(1, &GVAO);
 	glBindVertexArray(GVAO);
 	glGenBuffers(1, &GVBO);
 	glGenBuffers(1, &GEBO);
 
-	vector<float> ground({-5,-1.1,-5,   5,-1.1,-5,    5,-1.1,5,        -5,-1.1,5});
-	vector<int> gebo({0,1,2,0,2,3});
+	std::vector<float> ground({-7,-1.1,-7,   7,-1.1,-7,    7,-1.1,7,        -7,-1.1,7});
+	std::vector<int> gebo({0,1,2,0,2,3});
 
 	glBindBuffer(GL_ARRAY_BUFFER, GVBO);
 	glBufferData(GL_ARRAY_BUFFER, ground.size()*(sizeof(float)), &(ground[0]), GL_STATIC_DRAW);
@@ -235,25 +198,7 @@ int main(int argc, char** argv) {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GEBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, gebo.size()*(sizeof(int)), &(gebo[0]), GL_STATIC_DRAW);
 
-	/*sky background*/
-
-	glGenVertexArrays(1, &SVAO);
-	glBindVertexArray(SVAO);
-	glGenBuffers(1, &SVBO);
-	glGenBuffers(1, &SEBO);
-
-	vector<float> sky({-1,-1,5,      -1,1,5,  1,1,5,       1,-1,5});
-	vector<int> sebo({0,1,2,0,2,3});
-
-	glBindBuffer(GL_ARRAY_BUFFER, SVBO);
-	glBufferData(GL_ARRAY_BUFFER, sky.size()*(sizeof(float)), &(sky[0]), GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, SEBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sebo.size()*(sizeof(int)), &(sebo[0]), GL_STATIC_DRAW);
-
-	/* actual mesh */
+	/* ------------------- Buffers for the surface ----------------------------------- */
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 	glGenBuffers(1, &VBO);
@@ -261,7 +206,9 @@ int main(int argc, char** argv) {
 	glGenBuffers(1, &EBOF);
 	glGenBuffers(1, &EBOE);
 
-	SetupMesh();
+	// Initialize Mesh
+	graph(m1);
+	BufferMesh();
 
 	glBindVertexArray(0);
 
@@ -269,7 +216,6 @@ int main(int argc, char** argv) {
 	glutIdleFunc(display);
 	glutKeyboardFunc(keyfun);
 	glutMouseFunc(mousefun);
-	
 	glutMotionFunc(mousedragfun);
 	glutMainLoop();
 

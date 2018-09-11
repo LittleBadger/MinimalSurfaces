@@ -16,9 +16,9 @@ void main()
 	float col = .3*normal.x + normal.y + .1*normal.z;
 	
 	if (col > 0) {
-		color = vec4(.3*col+.7,.3*col+.7,.4*col+.8,1.0f);
+		color = vec4(.3*col+.7,.3*col+.7,.5*col+.8,1.0f);
 	} else {
 		col = abs(col);
-		color = vec4(.2*col+.7,.2*col+.7,.4*col+.7,1.0f);
+		color = vec4(.2*col+.7,.2*col+.7,.5*col+.7,1.0f);
 	}
 }
