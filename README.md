@@ -5,7 +5,7 @@ Here is a small program for visualizing and processing triangulated surfaces wit
 
 In particular, the program implements a mean curvature flow based on the intrinsic Laplace-Beltrami operator, along with a version of the Pinkall-Polthier algorithm (see [3]) with changing combinatorics for constructing discrete minimal surfaces. For comparison, some other standard techniques for mesh processing are also available.
 
-The program also includes some utility functions for constructing random triangulations and for generating discrete surfaces described by immersion functions.
+The program also includes some utility functions for constructing random triangulations and discrete surfaces described by immersion functions.
 
 
 
