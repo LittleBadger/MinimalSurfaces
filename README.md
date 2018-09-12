@@ -36,11 +36,12 @@ g++ -std=gnu++11 -o minimal_surfaces src\minimal_surfaces.cpp src\mesh.cpp src\e
 ````
 Left mouse button drag   : orbit camera
 Right mouse button drag  : dolly camera
-f                        : compute the intrinsic Delaunay triangulation
-g                        : flow to minimize the elastic energy
-h                        : a time step of mean curvature flow
-j                        : a time step of the Pinkall-Polthier algorithm
-k                        : a time step of the Pinkall-Polthier algorithm, with Delaunay retriangulation
+f                        : retriangulate using the combinatorics of the intrinsic Delaunay triangulation
+g                        : a time step of flow to minimize the elastic energy
+h                        : a time step of mean curvature flow using the standard cotan Laplacian
+j                        : a time step of mean curvature flow using the intrinsic Laplacian.
+k                        : an iteration of the Pinkall-Polthier algorithm (using the standard cotan Laplacian)
+l                        : an iteration of the Pinkall-Polthier algorithm, with Delaunay retriangulation
 ````
 
 ### Constructing Surfaces
