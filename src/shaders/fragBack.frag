@@ -11,5 +11,6 @@ void main()
 {
 	vec3 normal = normalize( -cross(dFdx(frag.pos), dFdy(frag.pos)) );
 	float col = .3*normal.x + normal.y + .1*normal.z;
-	color = vec4(.2*col+.8,.2*col+.8,.2*col+.9,1.0f);
+	
+	color = vec4(.2*col+.4,.2*col+.4,.2*col+.5,1.0f);
 }

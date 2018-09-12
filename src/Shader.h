@@ -47,11 +47,15 @@ public:
 		GLuint vertex, geometry, fragment;
 		GLint success;
 		GLchar infoLog[512];
-
+		
+		
+	
 		vertex = glCreateShader(GL_VERTEX_SHADER);
 		glShaderSource(vertex, 1, &vShaderCode, NULL);
 		glCompileShader(vertex);
 		glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
+				
+		
 		if (!success)
 		{
 			std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;

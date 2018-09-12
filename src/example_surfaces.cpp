@@ -71,6 +71,8 @@ void psurface(mesh &m1) {
 	
 	double r0 = 4.79129; double r1 = 0.436436; double r2 = 0.208712;
 	double c = 1.09109;
+
+	
 	radii.push_back(r0); centers.push_back(vec2(0,0));
 	radii.push_back(r1); centers.push_back(vec2(c,0));
 	radii.push_back(r1); centers.push_back(vec2(-c,0));
@@ -78,10 +80,14 @@ void psurface(mesh &m1) {
 	radii.push_back(r1); centers.push_back(vec2(0,c));
 	radii.push_back(r2); centers.push_back(vec2(0,0));
 
+	// sample with the following density, so that upon mapping to the sphere
+	// the points are uniform.
+	
+	// The distribution below looks suspicious, but seems correct. when did i calculate this
 	std::function<double(double)> stdist = [](double x) {
 		return sqrt(x)/sqrt(1-x);
 	};
-	m1.InitRandDiskTriangulation(20,100,radii,centers,stdist,34534);
+	m1.InitRandDiskTriangulation(20,150,radii,centers,stdist,34534);
 
 	std::function<vec3(double,double)> stereographic = [](double x, double y) {
 		return vec3(2*x/(1 + x*x+y*y),(-1 + x*x + y*y)/(1+x*x+y*y),2*y/(1+x*x+y*y));

@@ -2,8 +2,8 @@
 
 #include <windows.h>
 #include <GL/glew.h>
-#include <GL/glut.h>
 #include <iostream>
+#include <GLFW/glfw3.h>
 #include "Shader.h"
 #include <vector>
 #include <Eigen/Dense>
@@ -21,8 +21,9 @@ float a1 = 3.14/4.0, a2 = -3.14/2.0f +1.1;
 float sf = .5;
 
 // GUI stuff
-int mx0, my0;
-bool left_mouse; 
+GLFWwindow* window;
+double mx, my;
+bool lbutton_down, rbutton_down; 
 
 // The surface
 mesh m1;
@@ -34,7 +35,7 @@ GLuint SVAO, SVBO, SEBO;
 
 // Shaders
 GLuint shaderProgram;
-Shader *mainShader, *lineShader, *normalShader, *groundShader, *skyShader;
+Shader *mainShader, *backShader, *lineShader, *normalShader, *groundShader, *skyShader;
 
 void display()
 {
@@ -46,7 +47,7 @@ void display()
 	glm::mat4 inviewMat = glm::inverse(viewMat);
 	
 	/* --------- draw the surface --------------------------------------------------- */
-	glDisable(GL_CULL_FACE);
+
 	mainShader->Use();
 	glUniformMatrix4fv(glGetUniformLocation(mainShader->Program, "viewTransform"), 1, false, &viewMat[0][0]);
 	glBindVertexArray(VAO);
@@ -56,6 +57,21 @@ void display()
 	glDrawElements(GL_TRIANGLES, m1.F.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 	
+	/* --------- draw the back --------------------------------------------------- */
+	glCullFace(GL_FRONT);
+	backShader->Use();
+	glUniformMatrix4fv(glGetUniformLocation(mainShader->Program, "viewTransform"), 1, false, &viewMat[0][0]);
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOF);
+	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+	glPolygonOffset( 1, 1 );
+	glDrawElements(GL_TRIANGLES, m1.F.size(), GL_UNSIGNED_INT, 0);
+	glCullFace(GL_BACK);
+	glBindVertexArray(0);
+	
+	
+	
+	
 	/* --------- draw the ground plane and shadows ---------------------------------- */
 	groundShader->Use();
 	m1.ComputeBCV();
@@ -64,7 +80,7 @@ void display()
 	glUniformMatrix2fv(glGetUniformLocation(groundShader->Program, "invCov"), 1, false, &icv[0][0]);
 	glUniform3fv(glGetUniformLocation(groundShader->Program, "shift"), 1, &m1.sh[0]);
 
-	glEnable(GL_CULL_FACE);
+
 	glBindVertexArray(GVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, GVBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GEBO);
@@ -108,80 +124,26 @@ void BufferMesh() {
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m1.E.size()*sizeof(int), &(m1.E[0]), GL_STATIC_DRAW);
 }
 
-void keyfun(unsigned char key, int x, int y) {
-	if ( key == 'p' ) { m1.translateMesh(vec3(0,.1f,0)); BufferMesh(); }
-	if ( key == ';' ) { m1.translateMesh(vec3(0,-.1f,0)); BufferMesh(); }
-	if ( key == 'l' ) { m1.translateMesh(vec3(-.1f,0,0)); BufferMesh(); }
-	if ( key == '\'') { m1.translateMesh(vec3(.1f,0,0)); BufferMesh(); }
-	if ( key == '.' ) { m1.translateMesh(vec3(0,0,-.1f)); BufferMesh(); }
-	if ( key == '/' ) { m1.translateMesh(vec3(0,0,.1f)); BufferMesh(); }
 
-	
-	if ( key == 'f' ) {
-		m1.ExtrinsicDelEdgeFlipAlg();
-		BufferMesh();
-	}
-	if ( key == 'h' ) {
-		m1.MeanCurvatureFlow(.01);
-		BufferMesh();
-	}
-	if ( key == 'g' ) {
-		m1.ElasticFlow(.01);
-		BufferMesh();
-	}
-	if ( key == 'j' ) {
-		m1.PP();
-		BufferMesh();
-	}
-	if ( key == 'k' ) {
-		m1.PPFlip();
-		BufferMesh();
-	}
-}
-
-void mousedragfun(int mx, int my) {
-	if ( left_mouse ) {
-		a2 -= .01*(my-my0); a1 -= .01*(mx-mx0);
-	} else {
-		sf *= 1-.001*(my-my0);
-	}
-
-	mx0 = mx; my0 = my;
-}
-
-void mousefun(int button, int state, int x, int y) {
-	mx0 = x; my0 = y; 
-	left_mouse = (button == GLUT_LEFT_BUTTON);
-}
-
-int main(int argc, char** argv) {
-
-	glutInit(&argc, argv);
-	glutInitDisplayMode (GLUT_SINGLE | GLUT_RGB | GLUT_MULTISAMPLE);
-	glutInitWindowSize(700, 700);
-	glutCreateWindow(argv[0]);
-
-	glewExperimental = GL_TRUE;
-	
-	glewInit();
-
+void init() {
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_DEPTH_CLAMP);
-	glDisable(GL_CULL_FACE);
+	glEnable(GL_CULL_FACE);
 	glDepthFunc(GL_LEQUAL);
 
 	glDepthRange(0,100);
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glEnable(GL_LINE_SMOOTH);
-	glLineWidth(1.5);
-
+	
 	mainShader = new Shader("src/shaders/vert.vs","src/shaders/frag.frag");
+	backShader = new Shader("src/shaders/vert.vs","src/shaders/fragBack.frag");
 	lineShader = new Shader("src/shaders/vert.vs","src/shaders/fragL.frag");
-	skyShader = new Shader("src/shaders/vert.vs","src/shaders/fragSky.frag");
+	//skyShader = new Shader("src/shaders/vert.vs","src/shaders/fragSky.frag");
 	groundShader = new Shader("src/shaders/vert.vs","src/shaders/fragGr.frag");
 	//normalShader = new Shader("vert.vs","geom.geo","fragLB.frag");
+	
 
-	/* ------------------- Ground ---------------------------------------------------- */
+	// ------------------- Ground ---------------------------------------------------- //
 	glGenVertexArrays(1, &GVAO);
 	glBindVertexArray(GVAO);
 	glGenBuffers(1, &GVBO);
@@ -198,7 +160,7 @@ int main(int argc, char** argv) {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GEBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, gebo.size()*(sizeof(int)), &(gebo[0]), GL_STATIC_DRAW);
 
-	/* ------------------- Buffers for the surface ----------------------------------- */
+	// ------------------- Buffers for the surface --------- //
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 	glGenBuffers(1, &VBO);
@@ -207,18 +169,115 @@ int main(int argc, char** argv) {
 	glGenBuffers(1, &EBOE);
 
 	// Initialize Mesh
-	graph(m1);
+	psurface(m1);
 	BufferMesh();
 
 	glBindVertexArray(0);
+}
 
-	glutDisplayFunc(display);
-	glutIdleFunc(display);
-	glutKeyboardFunc(keyfun);
-	glutMouseFunc(mousefun);
-	glutMotionFunc(mousedragfun);
-	glutMainLoop();
 
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if ( key == 'P' ) { m1.translateMesh(vec3(0,.1f,0)); BufferMesh(); }
+	if ( key == ';' ) { m1.translateMesh(vec3(0,-.1f,0)); BufferMesh(); }
+	if ( key == 'L' ) { m1.translateMesh(vec3(-.1f,0,0)); BufferMesh(); }
+	if ( key == '\'') { m1.translateMesh(vec3(.1f,0,0)); BufferMesh(); }
+	if ( key == '.' ) { m1.translateMesh(vec3(0,0,-.1f)); BufferMesh(); }
+	if ( key == '/' ) { m1.translateMesh(vec3(0,0,.1f)); BufferMesh(); }
+
+	
+	if ( key == 'F' ) {
+		m1.ExtrinsicDelEdgeFlipAlg();
+		BufferMesh();
+	}
+	if ( key == 'H' ) {
+		m1.MeanCurvatureFlow(.01);
+		BufferMesh();
+	}
+	if ( key == 'G' ) {
+		m1.ElasticFlow(.01);
+		BufferMesh();
+	}
+	if ( key == 'J' ) {
+		m1.PP();
+		BufferMesh();
+	}
+	if ( key == 'K' ) {
+		m1.PPFlip();
+		BufferMesh();
+	}
+}
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+	glfwGetCursorPos(window,&mx,&my);
+	
+    if (button == GLFW_MOUSE_BUTTON_LEFT) {
+        if(GLFW_PRESS == action)
+            lbutton_down = true;
+        else if(GLFW_RELEASE == action)
+            lbutton_down = false;
+    }
+	
+	if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+        if(GLFW_PRESS == action)
+            rbutton_down = true;
+        else if(GLFW_RELEASE == action)
+            rbutton_down = false;
+    }
+}
+
+void mousedragfun() {
+	double x = 0; double y = 0;
+	
+	glfwGetCursorPos(window,&x,&y);
+	if ( lbutton_down ) {
+		a2 -= .01*(y-my); a1 -= .01*(x-mx);
+	} else {
+		sf *= 1-.001*(y-my);
+	}
+	
+	mx = x; my = y;
+}
+
+
+int main(int argc, char** argv) {
+
+	glewExperimental = true; // Needed for core profile
+	glfwInit();
+	
+	glfwWindowHint(GLFW_SAMPLES, 4); // 4x antialiasing
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // We want OpenGL 3.3
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); 
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+
+	window = glfwCreateWindow( 700, 700, "Minimal Surfaces", NULL, NULL);
+	glfwMakeContextCurrent(window);
+	
+	glewExperimental = GL_TRUE;
+	glewInit();
+	
+	//glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+	glfwSetKeyCallback(window, key_callback);
+	glfwSetMouseButtonCallback(window, mouse_button_callback);
+	init();
+	
+	do{
+
+		glClear( GL_COLOR_BUFFER_BIT );
+
+		display();
+		
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+		
+		if ( lbutton_down || rbutton_down ) mousedragfun();
+
+	} while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
+		   glfwWindowShouldClose(window) == 0 );
+		   
 	return 0;
 }
 

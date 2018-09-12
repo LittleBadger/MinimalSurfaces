@@ -273,6 +273,11 @@ void mesh::IntrinsicDelEdgeFlipAlg() {
 
 	ComputeEdgeLengths();
 
+	
+	// the following should be implemented with a queue,
+	// but at the moment it is implemented with a brute force
+	// loop for flexibility reasons.
+	
 	while (!allDelaunay) {
 		allDelaunay = true;
 		for (int i = 0; i < E.size()/2; ++i) {
@@ -414,8 +419,8 @@ void mesh::PlanarDelaunaryTriangulate() {
 
 							//std::cout<<std::endl;
 						}
-
-						Face(i,j,k);
+						if ( s2 < 0 ) Face(i,j,k);
+						else Face(j,i,k); 
 					}
 				}
 			}
@@ -561,9 +566,21 @@ void mesh::EdgeFlip(int e) {
 
 	FE[3*f1 + 0] = e; FE[3*f1+1] = AC; FE[3*f1+2] = BC;
 	FE[3*f2 + 0] = e; FE[3*f2+1] = AD; FE[3*f2+2] = BD;
-
-	F[3*f1 + 0] = A; F[3*f1 + 1] = B; F[3*f1 + 2] = C;
+	
+	// Keep track of orientation. *!! This is should be done better but a quick fix for now !!*
+	/*
+	F[3*f1 + 0] = A; F[3*f1 + 1] = C; F[3*f1 + 2] = B;
 	F[3*f2 + 0] = A; F[3*f2 + 1] = B; F[3*f2 + 2] = D;
+	*/
+	
+	if ( F[3*f1 + 0] == D ) { F[3*f1 + 0] = B; }
+	else if ( F[3*f1 + 1] == D ) { F[3*f1 + 1] = B; }
+	else if ( F[3*f1 + 2] == D ) { F[3*f1 + 2] = B; }
+	
+	if ( F[3*f2 + 0] == C ) { F[3*f2 + 0] = A; }
+	else if ( F[3*f2 + 1] == C ) { F[3*f2 + 1] = A; }
+	else if ( F[3*f2 + 2] == C ) { F[3*f2 + 2] = A; }
+
 }
 
 
