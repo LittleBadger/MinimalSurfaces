@@ -3,9 +3,9 @@
 
 Here is a small program for visualizing and processing triangulated surfaces with the intrinsic discrete Laplace-Beltrami operator introduced by Bobenko and Springborn, see [1,2]. The operator differs from usual combinatorial Laplacians in that it is defined via the intrinsic Delaunay triangulation, which can differ considerably from the immersed triangulation.
 
-In particular, the program implements a mean curvature flow based on the intrinsic Laplace-Beltrami operator, along with a version of the Pinkall-Polthier algorithm (see [3]) with changing combinatorics of the surface, for constructing discrete minimal surfaces. For comparison, some other standard algorithms for mesh processing are also available.
+In particular, the program implements a mean curvature flow based on the intrinsic Laplace-Beltrami operator, along with a version of the Pinkall-Polthier algorithm (see [3]) with changing combinatorics for constructing discrete minimal surfaces. For comparison, some other standard techniques for mesh processing are also available.
 
-The program also includes various utility functions for constructing random triangulations and for generating triangulations of surfaces described by an immersion.
+The program also includes some utility functions for constructing random triangulations and for generating discrete surfaces described by immersion functions.
 
 
 
