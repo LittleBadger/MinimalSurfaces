@@ -1,9 +1,9 @@
 # Minimal Surfaces
 <img align="right" width="300" src="https://github.com/LittleBadger/MinimalSurfaces/blob/master/PSurface.png">
 
-Here is a small program for visualizing and processing triangulated surfaces with the intrinsic discrete Laplace-Beltrami operator introduced by Bobenko and Springborn, see [1,2]. The operator differs from usual combinatorial Laplacians in that it is defined via the intrinsic Delaunay triangulation, which can differ considerably from the immersed triangulation.
+Here is a small program for visualizing and processing triangulated surfaces with the intrinsic discrete Laplace-Beltrami operator introduced by Bobenko and Springborn, see [1,2]. This operator is defined via the intrinsic Delaunay triangulation of the surface, and consequently enjoys many remarkable properties analogous to smooth Laplacians.
 
-In particular, the program implements a mean curvature flow based on the intrinsic Laplace-Beltrami operator, along with a version of the Pinkall-Polthier algorithm (see [3]) with changing combinatorics for constructing discrete minimal surfaces. For comparison, some other standard techniques for mesh processing are also available.
+This program focuses in particular on the construction of discrete minimal surfaces. It implements a mean curvature flow based on the intrinsic Laplace-Beltrami operator, along with a version of the Pinkall-Polthier algorithm (see [3]) that allows the changing of combinatorics. Some other standard techniques in mesh processing are also implemented, for comparison reasons.
 
 The program also includes some utility functions for constructing random triangulations and discrete surfaces described by immersion functions.
 
@@ -59,6 +59,6 @@ The Schwarz surface above, for example, was created by applying the Pinkall-Polt
 This is joint work with A.I. Bobenko and is supported by the DFG Collaborative Research Center TRR 109 “Discretization in Geometry and Dynamics.”
 
 ## References
-[1] A.I. Bobenko and B. Springborn. "A discrete Laplace-Beltrami operator for simplicial surfaces,"	Discrete Comput. Geom. 38:4 (2007) 740-756\
-[2] M. Fisher, B. Springborn, P. Schröder, A. I. Bobenko. "An algorithm for the construction of intrinsic delaunay triangulations with applications to digital geometry processing." ACM SIGGRAPH 2006 Courses, 69-74\
+[1] A.I. Bobenko and B. Springborn. "A discrete Laplace-Beltrami operator for simplicial surfaces,"	Discrete Comput. Geom. 38:4 (2007) 740-756.\
+[2] M. Fisher, B. Springborn, P. Schröder, A. I. Bobenko. "An algorithm for the construction of intrinsic delaunay triangulations with applications to digital geometry processing." ACM SIGGRAPH 2006 Courses, 69-74.\
 [3] U. Pinkall, K. Polthier. Experiment. Math., Volume 2, Issue 1 (1993), 15-36.
