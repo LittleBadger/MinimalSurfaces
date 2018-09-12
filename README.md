@@ -46,7 +46,7 @@ k                        : a time step of the Pinkall-Polthier algorithm, with D
 ### Constructing Surfaces
 
 
-The program includes functions for creating random triangulations of a disk (or a disk with holes), which can then be immersed in R^3 by a specified function. See example_surfaces.cpp for examples and details. The Schwarz surface above, for example, was created by applying the Pinkall-Polthier algorithm to a randomly triangulated disk with 5 holes, mapped to stereographically sphere.
+The program includes functions for creating random triangulations of a disk (or a disk with holes), which can then be immersed in R^3 by a specified function. See example_surfaces.cpp for examples and details. The Schwarz surface above, for example, was created by applying the Pinkall-Polthier algorithm to a surface constructed by first randomly triangulating a disk with 5 holes and then mapping to stereographically sphere. Here by random triangulation, we mean the Delaunay triangulation of a set of points in the disk sampled according to some distribution (in this case pushforward of the uniform distribution on the sphere).
 
 <p align = "center">
 <img width="600" src="https://github.com/LittleBadger/MinimalSurfaces/blob/master/mapping.png"> 
