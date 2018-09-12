@@ -3,7 +3,7 @@
 
 Here is a small program for visualizing and processing triangulated surfaces with the intrinsic discrete Laplace-Beltrami operator introduced by Bobenko and Springborn, see [1,2]. This operator is defined via the intrinsic Delaunay triangulation of the surface, and consequently enjoys many remarkable properties analogous to smooth Laplacians.
 
-This program focuses in particular on the construction of discrete minimal surfaces. It implements a mean curvature flow based on the intrinsic Laplace-Beltrami operator, along with a version of the Pinkall-Polthier algorithm (see [3]) that allows the changing of combinatorics. Some other standard techniques in mesh processing are also implemented, for comparison reasons.
+This program focuses in particular on the construction of discrete minimal surfaces. It implements a mean curvature flow based on the intrinsic Laplace-Beltrami operator, along with a version of the Pinkall-Polthier algorithm (see [3]) that allows for the changing of combinatorics. Some other standard techniques in mesh processing are also implemented for comparison.
 
 The program also includes some utility functions for constructing random triangulations and discrete surfaces described by immersion functions.
 
@@ -46,9 +46,9 @@ k                        : a time step of the Pinkall-Polthier algorithm, with D
 ### Constructing Surfaces
 
 
-The program includes functions for creating random triangulations of a disk (or a disk with holes), which can then be immersed in R^3 by a specified function. See example_surfaces.cpp for examples and details.
+The program includes functions for creating random triangulations of a disk (or a disk with holes), which can then be immersed in R^3 by a specified function. Here by random triangulation, we mean the Delaunay triangulation of a random set of points in the disk. See example_surfaces.cpp for examples and details. 
 
-The Schwarz surface above, for example, was created by applying the Pinkall-Polthier algorithm to a surface constructed by first randomly triangulating a disk with 5 holes and then mapping to stereographically sphere. Here by random triangulation, we mean the Delaunay triangulation of a set of points in the disk sampled according to some distribution (in this case pushforward of the uniform distribution on the sphere).
+The Schwarz surface above, for example, was created by applying the Pinkall-Polthier algorithm to a surface constructed by first randomly triangulating a disk with 5 holes and then mapping stereographically to sphere. The points are sampled on the disk according to the pushforward of the uniform distribution of the sphere.
 
 <p align = "center">
 <img width="600" src="https://github.com/LittleBadger/MinimalSurfaces/blob/master/mapping.png"> 
