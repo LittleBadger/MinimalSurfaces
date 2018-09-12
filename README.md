@@ -57,7 +57,7 @@ The Schwarz surface above, for example, was created by applying the Pinkall-Polt
 
 
 ## Acknowledgements
-This is joint work with A.I. Bobenko and is supported by the DFG Collaborative Research Center TRR 109 “Discretization in Geometry and Dynamics.”
+This joint work with A.I. Bobenko is supported by the DFG Collaborative Research Center TRR 109 “Discretization in Geometry and Dynamics.”
 
 ## References
 [1] A.I. Bobenko and B. Springborn. "A discrete Laplace-Beltrami operator for simplicial surfaces,"	Discrete Comput. Geom. 38:4 (2007) 740-756.\
