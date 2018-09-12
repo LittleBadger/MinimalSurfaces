@@ -48,7 +48,7 @@ k                        : a time step of the Pinkall-Polthier algorithm, with D
 
 The program includes functions for creating random triangulations of a disk (or a disk with holes), which can then be immersed in R^3 by a specified function. See example_surfaces.cpp for examples and details. The Schwarz surface above, for example, was created by applying the Pinkall-Polthier algorithm to a randomly triangulated disk with 5 holes, mapped to stereographically sphere.
 
-<p align = "center>
+<p align = "center">
 <img width="250" src="https://github.com/LittleBadger/MinimalSurfaces/blob/master/diskholes.png"> 
 <img width="250" src="https://github.com/LittleBadger/MinimalSurfaces/blob/master/sphere.png">
                                                                                              </p>
