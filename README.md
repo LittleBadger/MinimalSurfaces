@@ -15,7 +15,7 @@ The program also includes some utility functions for constructing random triangu
 
 ## Building and Running
 In order to build the program, you will first need the following:
-* OpenGL
+* [OpenGL](https://www.opengl.org/)
 * [GLEW](http://glew.sourceforge.net)
 * [GLFW](http://www.glfw.org)
 * [Eigen](http://eigen.tuxfamily.org/)
