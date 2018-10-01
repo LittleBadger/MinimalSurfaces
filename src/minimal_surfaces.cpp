@@ -149,7 +149,7 @@ void init() {
 	glGenBuffers(1, &GVBO);
 	glGenBuffers(1, &GEBO);
 
-	std::vector<float> ground({-7,-1.1,-7,   7,-1.1,-7,    7,-1.1,7,        -7,-1.1,7});
+	std::vector<float> ground({-15,-1.1,-15,   15,-1.1,-15,    15,-1.1,15,        -15,-1.1,15});
 	std::vector<int> gebo({0,1,2,0,2,3});
 
 	glBindBuffer(GL_ARRAY_BUFFER, GVBO);

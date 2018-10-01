@@ -88,6 +88,7 @@ void psurface(mesh &m1) {
 		return sqrt(x)/sqrt(1-x);
 	};
 	m1.InitRandDiskTriangulation(20,150,radii,centers,stdist,34534);
+	
 
 	std::function<vec3(double,double)> stereographic = [](double x, double y) {
 		return vec3(2*x/(1 + x*x+y*y),(-1 + x*x + y*y)/(1+x*x+y*y),2*y/(1+x*x+y*y));
